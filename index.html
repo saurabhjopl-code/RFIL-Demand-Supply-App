@@ -30,17 +30,50 @@
 
 <!-- ================= FILTER BAR ================= -->
 <section class="filter-bar">
-  <select><option>Latest Month</option></select>
-  <select><option>All FC</option></select>
-  <select><option>All Categories</option></select>
-  <select><option>All Company Remarks</option></select>
-  <input type="text" placeholder="Search Style ID or SKU">
+
+  <div class="filter-group">
+    <label>Month</label>
+    <select class="filter-control">
+      <option>Latest Month</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label>FC</label>
+    <select class="filter-control">
+      <option>All FC</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label>Category</label>
+    <select class="filter-control">
+      <option>All Categories</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label>Company Remark</label>
+    <select class="filter-control">
+      <option>All Company Remarks</option>
+    </select>
+  </div>
+
+  <div class="filter-group search-group">
+    <label>Search</label>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search Style ID or SKU"
+    />
+  </div>
+
 </section>
 
 <!-- ================= SUMMARY ZONE ================= -->
 <section class="summary-zone">
 
-  <div class="summary-grid-3x2">
+  <div class="summary-grid-2x3">
 
     <div class="summary-card" id="summarySale">
       <div class="summary-header">Sales</div>
