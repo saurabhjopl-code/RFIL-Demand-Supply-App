@@ -1,10 +1,15 @@
 .app-logo {
-  height: 40px;
+  height: 42px;
 }
 
 /* HEADER */
 .header-center {
   text-align: center;
+}
+
+.header-center h1 {
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .header-center p {
@@ -17,27 +22,34 @@
   background: var(--brand);
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: var(--radius);
   cursor: pointer;
+  font-weight: 500;
 }
 
 /* SUMMARY CARDS */
-.summary-card,
-.summary-full,
-.report-panel {
+.summary-card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  padding: 16px;
+  border-radius: 10px;
+  padding: 14px 16px 16px;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
 }
 
-.summary-card {
-  min-height: 140px;
+.summary-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.summary-full {
-  min-height: 120px;
+.summary-body {
+  flex: 1;
 }
 
 /* REPORT TABS */
@@ -47,6 +59,7 @@
   font-weight: 500;
   cursor: pointer;
   padding-bottom: 6px;
+  color: var(--text-muted);
 }
 
 .report-tabs .active {
@@ -57,6 +70,10 @@
 /* REPORT PANELS */
 .report-panel {
   display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 20px;
 }
 
 .report-panel.active {
