@@ -1,0 +1,13 @@
+:root {
+  --bg-main: #f7f8fa;
+  --bg-card: #ffffff;
+
+  --border-light: #e5e7eb;
+
+  --text-primary: #111827;
+  --text-muted: #6b7280;
+
+  --brand: #2563eb;
+
+  --radius: 8px;
+}
