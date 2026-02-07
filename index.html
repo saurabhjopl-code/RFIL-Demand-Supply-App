@@ -1,1 +1,123 @@
-<!-- UI Skeleton Locked -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demand Planning Engine</title>
+
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="app-header">
+  <div class="header-left">
+    <img src="assets/logo.png" class="app-logo" alt="Logo">
+  </div>
+
+  <div class="header-center">
+    <h1>Demand Planning Engine</h1>
+    <p>Decision System · Not a Reporting Tool</p>
+  </div>
+
+  <div class="header-right">
+    <button class="btn-primary">Export</button>
+  </div>
+</header>
+
+<!-- ================= FILTER BAR ================= -->
+<section class="filter-bar">
+  <select>
+    <option>Latest Month</option>
+  </select>
+
+  <select>
+    <option>All FC</option>
+  </select>
+
+  <select>
+    <option>All Categories</option>
+  </select>
+
+  <select>
+    <option>All Company Remarks</option>
+  </select>
+
+  <input type="text" placeholder="Search Style ID or SKU">
+</section>
+
+<!-- ================= SUMMARY ZONE ================= -->
+<section class="summary-zone">
+
+  <div class="summary-grid">
+    <div class="summary-card" id="summarySale">
+      <h3>Sales Summary</h3>
+    </div>
+
+    <div class="summary-card" id="summaryStock">
+      <h3>Stock Summary</h3>
+    </div>
+
+    <div class="summary-card" id="summaryCategory">
+      <h3>Category Summary</h3>
+    </div>
+
+    <div class="summary-card" id="summaryRemark">
+      <h3>Company Remark Summary</h3>
+    </div>
+  </div>
+
+  <div class="summary-full" id="summarySCBand">
+    <h3>Stock Cover Band</h3>
+  </div>
+
+  <div class="summary-full" id="summarySize">
+    <h3>Size Summary</h3>
+  </div>
+
+</section>
+
+<!-- ================= REPORT TABS ================= -->
+<nav class="report-tabs">
+  <button class="active">Demand</button>
+  <button>Overstock</button>
+  <button>Size Curve</button>
+  <button>Broken Size</button>
+  <button>Hero Styles</button>
+  <button>Production</button>
+</nav>
+
+<!-- ================= REPORT CONTENT ================= -->
+<main class="report-content">
+
+  <section class="report-panel active" id="demandReport">
+    <h2>Demand Report</h2>
+  </section>
+
+  <section class="report-panel" id="overstockReport">
+    <h2>Overstock Report</h2>
+  </section>
+
+  <section class="report-panel" id="sizeCurveReport">
+    <h2>Size Curve Report</h2>
+  </section>
+
+  <section class="report-panel" id="brokenSizeReport">
+    <h2>Broken Size Report</h2>
+  </section>
+
+  <section class="report-panel" id="heroStylesReport">
+    <h2>Hero Styles Report</h2>
+  </section>
+
+  <section class="report-panel" id="productionReport">
+    <h2>Production Report</h2>
+  </section>
+
+</main>
+
+</body>
+</html>
