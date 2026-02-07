@@ -1,0 +1,57 @@
+body {
+  background: var(--bg-main);
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--text-primary);
+}
+
+/* HEADER */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
+  align-items: center;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* FILTER BAR */
+.filter-bar {
+  position: sticky;
+  top: 72px;
+  z-index: 90;
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* SUMMARY */
+.summary-zone {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* REPORTS */
+.report-tabs {
+  display: flex;
+  gap: 24px;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.report-content {
+  padding: 20px;
+}
