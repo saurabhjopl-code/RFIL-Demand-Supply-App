@@ -30,52 +30,48 @@
 
 <!-- ================= FILTER BAR ================= -->
 <section class="filter-bar">
-  <select>
-    <option>Latest Month</option>
-  </select>
-
-  <select>
-    <option>All FC</option>
-  </select>
-
-  <select>
-    <option>All Categories</option>
-  </select>
-
-  <select>
-    <option>All Company Remarks</option>
-  </select>
-
+  <select><option>Latest Month</option></select>
+  <select><option>All FC</option></select>
+  <select><option>All Categories</option></select>
+  <select><option>All Company Remarks</option></select>
   <input type="text" placeholder="Search Style ID or SKU">
 </section>
 
 <!-- ================= SUMMARY ZONE ================= -->
 <section class="summary-zone">
 
-  <div class="summary-grid">
+  <div class="summary-grid-3x2">
+
     <div class="summary-card" id="summarySale">
-      <h3>Sales Summary</h3>
+      <div class="summary-header">Sales</div>
+      <div class="summary-body"></div>
     </div>
 
     <div class="summary-card" id="summaryStock">
-      <h3>Stock Summary</h3>
+      <div class="summary-header">Stock</div>
+      <div class="summary-body"></div>
+    </div>
+
+    <div class="summary-card" id="summarySCBand">
+      <div class="summary-header">Stock Cover Band</div>
+      <div class="summary-body"></div>
     </div>
 
     <div class="summary-card" id="summaryCategory">
-      <h3>Category Summary</h3>
+      <div class="summary-header">Category</div>
+      <div class="summary-body"></div>
     </div>
 
     <div class="summary-card" id="summaryRemark">
-      <h3>Company Remark Summary</h3>
+      <div class="summary-header">Company Remark</div>
+      <div class="summary-body"></div>
     </div>
-  </div>
 
-  <div class="summary-full" id="summarySCBand">
-    <h3>Stock Cover Band</h3>
-  </div>
+    <div class="summary-card" id="summarySize">
+      <div class="summary-header">Size</div>
+      <div class="summary-body"></div>
+    </div>
 
-  <div class="summary-full" id="summarySize">
-    <h3>Size Summary</h3>
   </div>
 
 </section>
@@ -93,29 +89,12 @@
 <!-- ================= REPORT CONTENT ================= -->
 <main class="report-content">
 
-  <section class="report-panel active" id="demandReport">
-    <h2>Demand Report</h2>
-  </section>
-
-  <section class="report-panel" id="overstockReport">
-    <h2>Overstock Report</h2>
-  </section>
-
-  <section class="report-panel" id="sizeCurveReport">
-    <h2>Size Curve Report</h2>
-  </section>
-
-  <section class="report-panel" id="brokenSizeReport">
-    <h2>Broken Size Report</h2>
-  </section>
-
-  <section class="report-panel" id="heroStylesReport">
-    <h2>Hero Styles Report</h2>
-  </section>
-
-  <section class="report-panel" id="productionReport">
-    <h2>Production Report</h2>
-  </section>
+  <section class="report-panel active" id="demandReport"><h2>Demand Report</h2></section>
+  <section class="report-panel" id="overstockReport"><h2>Overstock Report</h2></section>
+  <section class="report-panel" id="sizeCurveReport"><h2>Size Curve Report</h2></section>
+  <section class="report-panel" id="brokenSizeReport"><h2>Broken Size Report</h2></section>
+  <section class="report-panel" id="heroStylesReport"><h2>Hero Styles Report</h2></section>
+  <section class="report-panel" id="productionReport"><h2>Production Report</h2></section>
 
 </main>
 
