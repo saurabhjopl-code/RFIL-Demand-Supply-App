@@ -24,16 +24,12 @@ import { populateFilterDropdowns } from "../filters/filter-populate.js";
 import { initFilters } from "../filters/filter-ui.js";
 
 /* ===============================
-   DRR VERIFY
+   VERIFY MODULES
 ================================ */
 
 import { verifyDRR } from "../logic/drr-verify.js";
-
-/* ===============================
-   STOCK VERIFY
-================================ */
-
 import { verifyStockSeparation } from "../logic/stock-verify.js";
+import { verifySC } from "../logic/sc-verify.js";
 
 /* ===============================
    PROGRESS BAR
@@ -126,21 +122,14 @@ async function loadAllData() {
     console.warn("ℹ Filter listeners init skipped", e);
   }
 
-  /* ---------- DRR VERIFY ---------- */
-  try {
-    verifyDRR();
-    console.log("✔ DRR verified");
-  } catch (e) {
-    console.error("✖ DRR verification failed", e);
-  }
+  /* ---------- DRR ---------- */
+  verifyDRR();
 
-  /* ---------- STOCK VERIFY ---------- */
-  try {
-    verifyStockSeparation();
-    console.log("✔ Stock separation verified");
-  } catch (e) {
-    console.error("✖ Stock separation failed", e);
-  }
+  /* ---------- STOCK SPLIT ---------- */
+  verifyStockSeparation();
+
+  /* ---------- STOCK COVER ---------- */
+  verifySC();
 
   hideProgressBar();
 }
