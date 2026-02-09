@@ -1,12 +1,5 @@
 /*****************************************************************
- * FILTER DROPDOWN POPULATOR – FINAL (MONTH REMOVED)
- * ---------------------------------------------------------------
- * Rules:
- * - Read-only from AppState.rawData
- * - No filtering logic here
- * - No calculations
- * - No DOM structure changes
- * - Month dropdown removed completely
+ * FILTER DROPDOWN POPULATOR – FINAL (ID-BASED, MONTH REMOVED)
  *****************************************************************/
 
 import { AppState } from "../core/state.js";
@@ -26,7 +19,7 @@ export function populateFilterDropdowns() {
 ================================ */
 
 function populateFC() {
-  const select = document.querySelectorAll(".filter-group select")[1];
+  const select = document.getElementById("filter-fc");
   if (!select) return;
 
   const fcs = Array.from(
@@ -48,7 +41,7 @@ function populateFC() {
 ================================ */
 
 function populateCategory() {
-  const select = document.querySelectorAll(".filter-group select")[2];
+  const select = document.getElementById("filter-category");
   if (!select) return;
 
   const categories = Array.from(
@@ -72,7 +65,7 @@ function populateCategory() {
 ================================ */
 
 function populateRemark() {
-  const select = document.querySelectorAll(".filter-group select")[3];
+  const select = document.getElementById("filter-remark");
   if (!select) return;
 
   const remarks = Array.from(
