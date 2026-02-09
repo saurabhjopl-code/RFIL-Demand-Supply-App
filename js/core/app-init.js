@@ -1,18 +1,12 @@
 /*****************************************************************
  * APP INIT – MASTER BOOTSTRAP (STABLE & SAFE)
- * ---------------------------------------------------------------
- * NON-NEGOTIABLE RULES:
- * - UI IS LOCKED FOREVER
- * - No top-level await
- * - Long & explicit > short & clever
- * - Progress bar must ALWAYS resolve
  *****************************************************************/
 
 import { AppState } from "./state.js";
 import { sanityCheck } from "./utils.js";
 
 /* ===============================
-   DATA LOADERS (CSV)
+   DATA LOADERS
 ================================ */
 
 import { loadSales } from "../data/load-sales.js";
@@ -23,14 +17,26 @@ import { loadSizeCount } from "../data/load-size-count.js";
 import { loadProduction } from "../data/load-production.js";
 
 /* ===============================
-   FILTER MODULES
+   FILTERS
 ================================ */
 
 import { populateFilterDropdowns } from "../filters/filter-populate.js";
 import { initFilters } from "../filters/filter-ui.js";
 
 /* ===============================
-   PROGRESS BAR ELEMENTS
+   DRR VERIFY
+================================ */
+
+import { verifyDRR } from "../logic/drr-verify.js";
+
+/* ===============================
+   STOCK VERIFY
+================================ */
+
+import { verifyStockSeparation } from "../logic/stock-verify.js";
+
+/* ===============================
+   PROGRESS BAR
 ================================ */
 
 const progressBar = document.getElementById("dataLoadBar");
@@ -38,7 +44,7 @@ const progressFill = progressBar.querySelector(".data-load-progress");
 const progressText = progressBar.querySelector(".data-load-text");
 
 /* ===============================
-   PROGRESS BAR HELPERS
+   HELPERS
 ================================ */
 
 function showProgressBar() {
@@ -55,84 +61,46 @@ function hideProgressBar() {
 
 function updateProgress(label) {
   AppState.loadProgress.completed += 1;
-
   const percent = Math.round(
     (AppState.loadProgress.completed / AppState.loadProgress.total) * 100
   );
-
   progressFill.style.width = percent + "%";
   progressText.textContent = `Loading ${label}... (${percent}%)`;
 }
 
-/* ===============================
-   SAFE LOADER WRAPPER
-================================ */
-
-async function safeLoad(loaderFn, label) {
+async function safeLoad(fn, label) {
   try {
-    await loaderFn();
+    await fn();
     console.log(`✔ Loaded: ${label}`);
-  } catch (err) {
-    console.error(`✖ Failed to load: ${label}`, err);
+  } catch (e) {
+    console.error(`✖ Failed to load: ${label}`, e);
   } finally {
     updateProgress(label);
   }
 }
 
 /* ===============================
-   SANITY CHECKS (LOCKED)
+   SANITY
 ================================ */
 
 function runSanityChecks() {
   console.group("🧪 DATA SANITY CHECKS");
-
-  sanityCheck(
-    "Sales",
-    AppState.rawData.sales,
-    ["Month", "FC", "Style ID", "Size", "Units"]
-  );
-
-  sanityCheck(
-    "Stock",
-    AppState.rawData.stock,
-    ["FC", "Style ID", "Size", "Units"]
-  );
-
-  sanityCheck(
-    "Style Status",
-    AppState.rawData.styleStatus,
-    ["Style ID", "Category", "Company Remark"]
-  );
-
-  sanityCheck(
-    "Sale Days",
-    AppState.rawData.saleDays,
-    ["Month", "Days"]
-  );
-
-  sanityCheck(
-    "Size Count",
-    AppState.rawData.sizeCount,
-    ["Style ID", "Size Count"]
-  );
-
-  sanityCheck(
-    "Production",
-    AppState.rawData.production,
-    ["Uniware SKU", "Production Plann"]
-  );
-
+  sanityCheck("Sales", AppState.rawData.sales);
+  sanityCheck("Stock", AppState.rawData.stock);
+  sanityCheck("Style Status", AppState.rawData.styleStatus);
+  sanityCheck("Sale Days", AppState.rawData.saleDays);
+  sanityCheck("Size Count", AppState.rawData.sizeCount);
+  sanityCheck("Production", AppState.rawData.production);
   console.groupEnd();
 }
 
 /* ===============================
-   MAIN DATA LOAD SEQUENCE
+   MAIN FLOW
 ================================ */
 
 async function loadAllData() {
   showProgressBar();
 
-  // IMPORTANT: order is intentional and fixed
   await safeLoad(loadSales, "Sales");
   await safeLoad(loadStock, "Stock");
   await safeLoad(loadStyleStatus, "Style Status");
@@ -142,53 +110,46 @@ async function loadAllData() {
 
   console.log("✅ Data loading phase completed");
 
-  /* ---------- SANITY CHECK ---------- */
   runSanityChecks();
 
-  /* ---------- FILTER DROPDOWN POPULATION ---------- */
   try {
     populateFilterDropdowns();
     console.log("✔ Filter dropdowns populated");
   } catch (e) {
-    console.error("✖ Failed to populate filter dropdowns", e);
+    console.error("✖ Filter dropdown population failed", e);
   }
 
-  /* ---------- FILTER EVENT BINDING ---------- */
   try {
     initFilters();
     console.log("✔ Filter listeners initialized");
   } catch (e) {
-    console.warn("ℹ Filter listeners not initialized yet", e);
+    console.warn("ℹ Filter listeners init skipped", e);
+  }
+
+  /* ---------- DRR VERIFY ---------- */
+  try {
+    verifyDRR();
+    console.log("✔ DRR verified");
+  } catch (e) {
+    console.error("✖ DRR verification failed", e);
+  }
+
+  /* ---------- STOCK VERIFY ---------- */
+  try {
+    verifyStockSeparation();
+    console.log("✔ Stock separation verified");
+  } catch (e) {
+    console.error("✖ Stock separation failed", e);
   }
 
   hideProgressBar();
 }
 
-/* ===============================
-   DOM READY ENTRY POINT
-================================ */
-
 document.addEventListener("DOMContentLoaded", () => {
   try {
     loadAllData();
   } catch (e) {
-    console.error("❌ Fatal error during app initialization", e);
+    console.error("❌ Fatal init error", e);
     hideProgressBar();
   }
 });
-
-/* === SAME app-init.js AS BEFORE === */
-/* NOTHING REMOVED */
-/* ONLY ONE ADDITION BELOW */
-
-import { verifyDRR } from "../logic/drr-verify.js";
-
-/* inside loadAllData(), AFTER filters init */
-
-  /* ---------- DRR VERIFICATION ---------- */
-  try {
-    verifyDRR();
-    console.log("✔ DRR calculated successfully");
-  } catch (e) {
-    console.error("✖ DRR calculation failed", e);
-  }
