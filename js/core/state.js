@@ -1,3 +1,7 @@
+/*****************************************************************
+ * APP STATE – FINAL (EXPOSED SAFELY)
+ *****************************************************************/
+
 export const AppState = {
   rawData: {
     sales: [],
@@ -8,20 +12,17 @@ export const AppState = {
     production: []
   },
 
-  filters: {
-    month: "Latest Month",
-    fc: "All FC",
-    category: "All Categories",
-    remark: "All Company Remarks",
-    search: ""
-  },
-
   filteredData: {
     sales: []
   },
 
-  loadProgress: {
-    total: 6,
-    completed: 0
+  filters: {
+    fc: "All FC",
+    category: "All Categories",
+    remark: "All Company Remarks",
+    search: ""
   }
 };
+
+// 🔒 EXPOSE FOR DEBUGGING & SANITY CHECKS
+window.AppState = AppState;
