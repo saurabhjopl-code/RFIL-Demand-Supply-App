@@ -1,10 +1,11 @@
 /*****************************************************************
- * DEMAND REPORT – FINAL (GRID-CORRECT)
+ * DEMAND REPORT – FINAL (TABLE-BASED, GUARANTEED)
  * ---------------------------------------------------------------
- * - Uses existing report-panel
- * - Uses existing report-table grid wrapper
- * - NO CSS changes
- * - NO UI changes
+ * - Uses native HTML table
+ * - Zero CSS dependency
+ * - Zero UI dependency
+ * - Guaranteed column layout
+ * - Style → SKU expand / collapse
  *****************************************************************/
 
 import { calculateStyleDRR, calculateSkuDRR } from "../logic/drr-engine.js";
@@ -22,34 +23,34 @@ export function renderDemandReport() {
   panel.innerHTML = "";
 
   /* ===============================
-     GRID WRAPPER (CRITICAL)
+     CREATE TABLE
   ================================ */
 
-  const table = document.createElement("div");
-  table.className = "report-table";
-  panel.appendChild(table);
+  const table = document.createElement("table");
+  table.style.width = "100%";
+  table.style.borderCollapse = "collapse";
 
-  /* ===============================
-     HEADER
-  ================================ */
-
-  const header = document.createElement("div");
-  header.className = "report-row report-header";
-  header.innerHTML = `
-    <div></div>
-    <div>Style / Size</div>
-    <div>Sales</div>
-    <div>Seller Stock</div>
-    <div>FC Stock</div>
-    <div>DRR</div>
-    <div>SC</div>
-    <div>Direct Demand</div>
-    <div>In Production</div>
-    <div>Pendancy</div>
-    <div>Buy Bucket</div>
-    <div>Priority</div>
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th></th>
+        <th>Style / Size</th>
+        <th>Sales</th>
+        <th>Seller Stock</th>
+        <th>FC Stock</th>
+        <th>DRR</th>
+        <th>SC</th>
+        <th>Direct Demand</th>
+        <th>In Production</th>
+        <th>Pendancy</th>
+        <th>Buy Bucket</th>
+        <th>Priority</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
   `;
-  table.appendChild(header);
+
+  const tbody = table.querySelector("tbody");
 
   /* ===============================
      LOAD LOGIC
@@ -125,69 +126,62 @@ export function renderDemandReport() {
   });
 
   /* ===============================
-     RENDER
+     RENDER TABLE
   ================================ */
 
   Object.values(styles)
     .sort((a, b) => a.priority - b.priority)
     .forEach(style => {
-      const row = document.createElement("div");
-      row.className = "report-row style-row";
-      row.innerHTML = `
-        <div class="toggle">+</div>
-        <div>${style.styleId}</div>
-        <div>${style.sales}</div>
-        <div>${style.sellerStock}</div>
-        <div>${style.fcStock}</div>
-        <div>${style.drr.toFixed(2)}</div>
-        <div>${style.sc.toFixed(1)}</div>
-        <div>${style.directDemand}</div>
-        <div>${style.inProduction}</div>
-        <div>${style.pendancy}</div>
-        <div>${style.buyBucket}</div>
-        <div>${style.priority}</div>
+      const styleRow = document.createElement("tr");
+      styleRow.innerHTML = `
+        <td class="toggle" style="cursor:pointer">+</td>
+        <td><strong>${style.styleId}</strong></td>
+        <td>${style.sales}</td>
+        <td>${style.sellerStock}</td>
+        <td>${style.fcStock}</td>
+        <td>${style.drr.toFixed(2)}</td>
+        <td>${style.sc.toFixed(1)}</td>
+        <td>${style.directDemand}</td>
+        <td>${style.inProduction}</td>
+        <td>${style.pendancy}</td>
+        <td>${style.buyBucket}</td>
+        <td>${style.priority}</td>
       `;
-      table.appendChild(row);
-
-      const skuWrap = document.createElement("div");
-      skuWrap.className = "sku-wrapper hidden";
+      tbody.appendChild(styleRow);
 
       style.skus.forEach(sku => {
-        const skuRow = document.createElement("div");
-        skuRow.className = "report-row sku-row";
+        const skuRow = document.createElement("tr");
+        skuRow.className = "sku-row";
+        skuRow.style.display = "none";
         skuRow.innerHTML = `
-          <div></div>
-          <div>Size ${sku.size}</div>
-          <div>${sku.sales}</div>
-          <div>${sku.sellerStock}</div>
-          <div>${sku.fcStock}</div>
-          <div>${sku.drr.toFixed(2)}</div>
-          <div>${sku.sc.toFixed(1)}</div>
-          <div>${sku.directDemand}</div>
-          <div>${sku.inProduction}</div>
-          <div>${sku.pendancy}</div>
-          <div>${sku.buyBucket}</div>
-          <div></div>
+          <td></td>
+          <td style="padding-left:20px">Size ${sku.size}</td>
+          <td>${sku.sales}</td>
+          <td>${sku.sellerStock}</td>
+          <td>${sku.fcStock}</td>
+          <td>${sku.drr.toFixed(2)}</td>
+          <td>${sku.sc.toFixed(1)}</td>
+          <td>${sku.directDemand}</td>
+          <td>${sku.inProduction}</td>
+          <td>${sku.pendancy}</td>
+          <td>${sku.buyBucket}</td>
+          <td></td>
         `;
-        skuWrap.appendChild(skuRow);
+        tbody.appendChild(skuRow);
       });
 
-      table.appendChild(skuWrap);
+      styleRow.addEventListener("click", () => {
+        let next = styleRow.nextSibling;
+        let open = next && next.style.display !== "none";
+
+        styleRow.querySelector(".toggle").textContent = open ? "+" : "−";
+
+        while (next && next.classList.contains("sku-row")) {
+          next.style.display = open ? "none" : "table-row";
+          next = next.nextSibling;
+        }
+      });
     });
 
-  /* ===============================
-     EXPAND / COLLAPSE
-  ================================ */
-
-  table.onclick = e => {
-    const toggle = e.target.closest(".toggle");
-    if (!toggle) return;
-
-    const styleRow = toggle.closest(".style-row");
-    const skuWrap = styleRow.nextElementSibling;
-
-    const open = !skuWrap.classList.contains("hidden");
-    skuWrap.classList.toggle("hidden", open);
-    toggle.textContent = open ? "+" : "−";
-  };
+  panel.appendChild(table);
 }
