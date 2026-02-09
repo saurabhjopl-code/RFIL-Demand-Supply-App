@@ -11,3 +11,40 @@ export function parseCSV(text) {
     return obj;
   });
 }
+
+/* ===============================
+   SANITY CHECK UTIL
+================================ */
+
+export function sanityCheck(name, data, requiredColumns = []) {
+  console.group(`🔍 Sanity Check: ${name}`);
+
+  if (!Array.isArray(data)) {
+    console.error(`❌ ${name}: Not an array`);
+    console.groupEnd();
+    return;
+  }
+
+  console.log(`✔ Rows loaded: ${data.length}`);
+
+  if (data.length === 0) {
+    console.warn(`⚠ ${name}: No data rows`);
+    console.groupEnd();
+    return;
+  }
+
+  const sample = data[0];
+  const columns = Object.keys(sample);
+
+  console.log("✔ Columns found:", columns);
+
+  const missing = requiredColumns.filter(c => !columns.includes(c));
+  if (missing.length > 0) {
+    console.warn(`⚠ Missing columns in ${name}:`, missing);
+  } else {
+    console.log("✔ All required columns present");
+  }
+
+  console.log("📄 Sample row:", sample);
+  console.groupEnd();
+}
