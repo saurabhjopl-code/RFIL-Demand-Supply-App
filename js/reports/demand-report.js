@@ -1,11 +1,10 @@
 /*****************************************************************
- * DEMAND REPORT – FINAL (TABLE-BASED, GUARANTEED)
+ * DEMAND REPORT – FINAL (TABLE UI MATCHED)
  * ---------------------------------------------------------------
- * - Uses native HTML table
- * - Zero CSS dependency
- * - Zero UI dependency
- * - Guaranteed column layout
- * - Style → SKU expand / collapse
+ * - Center aligned table
+ * - Sales sorted high → low
+ * - Native HTML table
+ * - Expand / collapse supported
  *****************************************************************/
 
 import { calculateStyleDRR, calculateSkuDRR } from "../logic/drr-engine.js";
@@ -23,12 +22,14 @@ export function renderDemandReport() {
   panel.innerHTML = "";
 
   /* ===============================
-     CREATE TABLE
+     TABLE SETUP
   ================================ */
 
   const table = document.createElement("table");
   table.style.width = "100%";
+  table.style.margin = "0 auto";
   table.style.borderCollapse = "collapse";
+  table.style.textAlign = "center";
 
   table.innerHTML = `
     <thead>
@@ -78,15 +79,15 @@ export function renderDemandReport() {
      BUILD STYLE DATA
   ================================ */
 
-  const styles = {};
+  const styles = [];
 
   Object.keys(styleDRR).forEach(styleId => {
-    styles[styleId] = {
+    styles.push({
       styleId,
-      sales: styleDRR[styleId].units || 0,
+      sales: styleDRR[styleId]?.units || 0,
       sellerStock: styleStock[styleId]?.sellerStock || 0,
       fcStock: styleStock[styleId]?.fcStock || 0,
-      drr: styleDRR[styleId].drr || 0,
+      drr: styleDRR[styleId]?.drr || 0,
       sc: styleSC[styleId]?.sc || 0,
       directDemand: styleDemand[styleId]?.directDemand || 0,
       inProduction: stylePend[styleId]?.inProduction || 0,
@@ -94,12 +95,12 @@ export function renderDemandReport() {
       buyBucket: styleBucket[styleId]?.bucket || "LOW",
       priority: priorityMap[styleId] || 9999,
       skus: []
-    };
+    });
   });
 
   Object.keys(skuDRR).forEach(key => {
     const sku = skuDRR[key];
-    const style = styles[sku.styleId];
+    const style = styles.find(s => s.styleId === sku.styleId);
     if (!style) return;
 
     const stock = skuStock[key] || {};
@@ -126,62 +127,66 @@ export function renderDemandReport() {
   });
 
   /* ===============================
+     SORT: SALES HIGH → LOW
+  ================================ */
+
+  styles.sort((a, b) => b.sales - a.sales);
+
+  /* ===============================
      RENDER TABLE
   ================================ */
 
-  Object.values(styles)
-    .sort((a, b) => a.priority - b.priority)
-    .forEach(style => {
-      const styleRow = document.createElement("tr");
-      styleRow.innerHTML = `
-        <td class="toggle" style="cursor:pointer">+</td>
-        <td><strong>${style.styleId}</strong></td>
-        <td>${style.sales}</td>
-        <td>${style.sellerStock}</td>
-        <td>${style.fcStock}</td>
-        <td>${style.drr.toFixed(2)}</td>
-        <td>${style.sc.toFixed(1)}</td>
-        <td>${style.directDemand}</td>
-        <td>${style.inProduction}</td>
-        <td>${style.pendancy}</td>
-        <td>${style.buyBucket}</td>
-        <td>${style.priority}</td>
+  styles.forEach(style => {
+    const styleRow = document.createElement("tr");
+    styleRow.innerHTML = `
+      <td class="toggle" style="cursor:pointer">+</td>
+      <td><strong>${style.styleId}</strong></td>
+      <td>${style.sales}</td>
+      <td>${style.sellerStock}</td>
+      <td>${style.fcStock}</td>
+      <td>${style.drr.toFixed(2)}</td>
+      <td>${style.sc.toFixed(1)}</td>
+      <td>${style.directDemand}</td>
+      <td>${style.inProduction}</td>
+      <td>${style.pendancy}</td>
+      <td>${style.buyBucket}</td>
+      <td>${style.priority}</td>
+    `;
+    tbody.appendChild(styleRow);
+
+    style.skus.forEach(sku => {
+      const skuRow = document.createElement("tr");
+      skuRow.className = "sku-row";
+      skuRow.style.display = "none";
+      skuRow.innerHTML = `
+        <td></td>
+        <td>Size ${sku.size}</td>
+        <td>${sku.sales}</td>
+        <td>${sku.sellerStock}</td>
+        <td>${sku.fcStock}</td>
+        <td>${sku.drr.toFixed(2)}</td>
+        <td>${sku.sc.toFixed(1)}</td>
+        <td>${sku.directDemand}</td>
+        <td>${sku.inProduction}</td>
+        <td>${sku.pendancy}</td>
+        <td>${sku.buyBucket}</td>
+        <td></td>
       `;
-      tbody.appendChild(styleRow);
-
-      style.skus.forEach(sku => {
-        const skuRow = document.createElement("tr");
-        skuRow.className = "sku-row";
-        skuRow.style.display = "none";
-        skuRow.innerHTML = `
-          <td></td>
-          <td style="padding-left:20px">Size ${sku.size}</td>
-          <td>${sku.sales}</td>
-          <td>${sku.sellerStock}</td>
-          <td>${sku.fcStock}</td>
-          <td>${sku.drr.toFixed(2)}</td>
-          <td>${sku.sc.toFixed(1)}</td>
-          <td>${sku.directDemand}</td>
-          <td>${sku.inProduction}</td>
-          <td>${sku.pendancy}</td>
-          <td>${sku.buyBucket}</td>
-          <td></td>
-        `;
-        tbody.appendChild(skuRow);
-      });
-
-      styleRow.addEventListener("click", () => {
-        let next = styleRow.nextSibling;
-        let open = next && next.style.display !== "none";
-
-        styleRow.querySelector(".toggle").textContent = open ? "+" : "−";
-
-        while (next && next.classList.contains("sku-row")) {
-          next.style.display = open ? "none" : "table-row";
-          next = next.nextSibling;
-        }
-      });
+      tbody.appendChild(skuRow);
     });
+
+    styleRow.addEventListener("click", () => {
+      let next = styleRow.nextSibling;
+      const open = next && next.style.display !== "none";
+
+      styleRow.querySelector(".toggle").textContent = open ? "+" : "−";
+
+      while (next && next.classList.contains("sku-row")) {
+        next.style.display = open ? "none" : "table-row";
+        next = next.nextSibling;
+      }
+    });
+  });
 
   panel.appendChild(table);
 }
