@@ -1,12 +1,12 @@
 /*****************************************************************
- * FILTER DROPDOWN POPULATOR
+ * FILTER DROPDOWN POPULATOR – FINAL (MONTH REMOVED)
  * ---------------------------------------------------------------
  * Rules:
  * - Read-only from AppState.rawData
  * - No filtering logic here
  * - No calculations
  * - No DOM structure changes
- * - Populate values only once after data load
+ * - Month dropdown removed completely
  *****************************************************************/
 
 import { AppState } from "../core/state.js";
@@ -14,37 +14,11 @@ import { AppState } from "../core/state.js";
 export function populateFilterDropdowns() {
   console.group("🔧 Populating Filter Dropdowns");
 
-  populateMonth();
   populateFC();
   populateCategory();
   populateRemark();
 
   console.groupEnd();
-}
-
-/* ===============================
-   MONTH FILTER
-================================ */
-
-function populateMonth() {
-  const select = document.querySelectorAll(".filter-group select")[0];
-  if (!select) return;
-
-  const months = Array.from(
-    new Set(AppState.rawData.sales.map(r => r.Month).filter(Boolean))
-  );
-
-  // Sort months naturally if possible
-  months.sort();
-
-  select.innerHTML = "";
-  select.appendChild(new Option("Latest Month", "Latest Month"));
-
-  months.forEach(m => {
-    select.appendChild(new Option(m, m));
-  });
-
-  console.log("✔ Month filter populated:", months.length);
 }
 
 /* ===============================
