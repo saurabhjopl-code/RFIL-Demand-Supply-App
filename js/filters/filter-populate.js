@@ -1,17 +1,13 @@
 /*****************************************************************
- * FILTER DROPDOWN POPULATOR – FINAL (ID-BASED, MONTH REMOVED)
+ * FILTER DROPDOWN POPULATOR – LOCKED
  *****************************************************************/
 
 import { AppState } from "../core/state.js";
 
 export function populateFilterDropdowns() {
-  console.group("🔧 Populating Filter Dropdowns");
-
   populateFC();
   populateCategory();
   populateRemark();
-
-  console.groupEnd();
 }
 
 /* ===============================
@@ -19,21 +15,14 @@ export function populateFilterDropdowns() {
 ================================ */
 
 function populateFC() {
-  const select = document.getElementById("filter-fc");
+  const select = document.querySelectorAll(".filter-group select")[0];
   if (!select) return;
 
-  const fcs = Array.from(
-    new Set(AppState.rawData.sales.map(r => r.FC).filter(Boolean))
-  ).sort();
+  const fcs = [...new Set(AppState.rawData.sales.map(r => r.FC).filter(Boolean))];
 
   select.innerHTML = "";
   select.appendChild(new Option("All FC", "All FC"));
-
-  fcs.forEach(fc => {
-    select.appendChild(new Option(fc, fc));
-  });
-
-  console.log("✔ FC filter populated:", fcs.length);
+  fcs.sort().forEach(fc => select.appendChild(new Option(fc, fc)));
 }
 
 /* ===============================
@@ -41,23 +30,16 @@ function populateFC() {
 ================================ */
 
 function populateCategory() {
-  const select = document.getElementById("filter-category");
+  const select = document.querySelectorAll(".filter-group select")[1];
   if (!select) return;
 
-  const categories = Array.from(
-    new Set(
-      AppState.rawData.styleStatus.map(r => r.Category).filter(Boolean)
-    )
-  ).sort();
+  const categories = [
+    ...new Set(AppState.rawData.styleStatus.map(r => r.Category).filter(Boolean))
+  ];
 
   select.innerHTML = "";
   select.appendChild(new Option("All Categories", "All Categories"));
-
-  categories.forEach(c => {
-    select.appendChild(new Option(c, c));
-  });
-
-  console.log("✔ Category filter populated:", categories.length);
+  categories.sort().forEach(c => select.appendChild(new Option(c, c)));
 }
 
 /* ===============================
@@ -65,25 +47,18 @@ function populateCategory() {
 ================================ */
 
 function populateRemark() {
-  const select = document.getElementById("filter-remark");
+  const select = document.querySelectorAll(".filter-group select")[2];
   if (!select) return;
 
-  const remarks = Array.from(
-    new Set(
+  const remarks = [
+    ...new Set(
       AppState.rawData.styleStatus
         .map(r => r["Company Remark"])
         .filter(Boolean)
     )
-  ).sort();
+  ];
 
   select.innerHTML = "";
-  select.appendChild(
-    new Option("All Company Remarks", "All Company Remarks")
-  );
-
-  remarks.forEach(r => {
-    select.appendChild(new Option(r, r));
-  });
-
-  console.log("✔ Company Remark filter populated:", remarks.length);
+  select.appendChild(new Option("All Company Remarks", "All Company Remarks"));
+  remarks.sort().forEach(r => select.appendChild(new Option(r, r)));
 }
