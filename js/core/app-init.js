@@ -1,4 +1,5 @@
 import { AppState } from "./state.js";
+import { sanityCheck } from "./utils.js";
 
 import { loadSales } from "../data/load-sales.js";
 import { loadStock } from "../data/load-stock.js";
@@ -16,7 +17,6 @@ function updateProgress(label) {
   const percent = Math.round(
     (AppState.loadProgress.completed / AppState.loadProgress.total) * 100
   );
-
   progressFill.style.width = percent + "%";
   progressText.textContent = `Loading ${label}... (${percent}%)`;
 }
@@ -32,6 +32,48 @@ async function safeLoad(fn, label) {
   }
 }
 
+function runSanityChecks() {
+  console.group("🧪 DATA SANITY CHECKS");
+
+  sanityCheck(
+    "Sales",
+    AppState.rawData.sales,
+    ["Month", "FC", "Style ID", "Size", "Units"]
+  );
+
+  sanityCheck(
+    "Stock",
+    AppState.rawData.stock,
+    ["FC", "Style ID", "Size", "Units"]
+  );
+
+  sanityCheck(
+    "Style Status",
+    AppState.rawData.styleStatus,
+    ["Style ID", "Category", "Company Remark"]
+  );
+
+  sanityCheck(
+    "Sale Days",
+    AppState.rawData.saleDays,
+    ["Month", "Days"]
+  );
+
+  sanityCheck(
+    "Size Count",
+    AppState.rawData.sizeCount,
+    ["Style ID", "Size Count"]
+  );
+
+  sanityCheck(
+    "Production",
+    AppState.rawData.production,
+    ["Uniware SKU", "Production Plann"]
+  );
+
+  console.groupEnd();
+}
+
 async function loadAllData() {
   progressBar.classList.remove("hidden");
 
@@ -45,6 +87,8 @@ async function loadAllData() {
   setTimeout(() => {
     progressBar.classList.add("hidden");
     console.log("✅ Data loading phase completed");
+
+    runSanityChecks(); // 👈 critical checkpoint
   }, 300);
 }
 
