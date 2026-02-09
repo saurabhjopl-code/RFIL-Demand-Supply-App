@@ -176,3 +176,19 @@ document.addEventListener("DOMContentLoaded", () => {
     hideProgressBar();
   }
 });
+
+/* === SAME app-init.js AS BEFORE === */
+/* NOTHING REMOVED */
+/* ONLY ONE ADDITION BELOW */
+
+import { verifyDRR } from "../logic/drr-verify.js";
+
+/* inside loadAllData(), AFTER filters init */
+
+  /* ---------- DRR VERIFICATION ---------- */
+  try {
+    verifyDRR();
+    console.log("✔ DRR calculated successfully");
+  } catch (e) {
+    console.error("✖ DRR calculation failed", e);
+  }
