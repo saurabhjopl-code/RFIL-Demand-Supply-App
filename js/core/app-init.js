@@ -1,5 +1,5 @@
 /*****************************************************************
- * APP INIT – FINAL STABLE BOOTSTRAP
+ * APP INIT – FINAL STABLE BOOTSTRAP (LOCKED)
  *****************************************************************/
 
 import { AppState } from "./state.js";
@@ -22,6 +22,7 @@ import { loadProduction } from "../data/load-production.js";
 
 import { populateFilterDropdowns } from "../filters/filter-populate.js";
 import { initFilters } from "../filters/filter-ui.js";
+import { applyFilters } from "../filters/filter-engine.js";
 
 /* ===============================
    REPORTS
@@ -106,8 +107,12 @@ async function loadAllData() {
 
   runSanityChecks();
 
+  /* ---------- FILTER SETUP ---------- */
   populateFilterDropdowns();
   initFilters();
+
+  /* 🔒 CRITICAL: FIRST FILTER PASS */
+  applyFilters();
 
   /* ---------- DEMAND REPORT ---------- */
   renderDemandReport();
