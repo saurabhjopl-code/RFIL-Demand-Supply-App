@@ -137,6 +137,8 @@ function runSanityChecks() {
    MAIN DATA LOAD SEQUENCE
 ================================ */
 
+
+
 async function loadAllData() {
   showProgressBar();
 
@@ -164,6 +166,16 @@ async function loadAllData() {
   }
 
   hideProgressBar();
+     // -------------------------------
+  // Populate filter dropdown values
+  // -------------------------------
+  try {
+    populateFilterDropdowns();
+    console.log("✔ Filter dropdowns populated");
+  } catch (e) {
+    console.error("✖ Failed to populate filter dropdowns", e);
+  }
+
 }
 
 /* ===============================
@@ -178,4 +190,5 @@ document.addEventListener("DOMContentLoaded", () => {
     hideProgressBar();
   }
 });
+
 
