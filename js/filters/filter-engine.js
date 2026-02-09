@@ -1,11 +1,12 @@
 /*****************************************************************
- * FILTER ENGINE – PURE DATA FILTERING
+ * FILTER ENGINE – FINAL (MONTH REMOVED)
  * ---------------------------------------------------------------
  * Rules:
  * - Never mutate rawData
  * - Write only to filteredData
  * - No DOM access
  * - Search overrides all other filters
+ * - Month logic completely removed
  *****************************************************************/
 
 import { AppState } from "../core/state.js";
@@ -30,13 +31,6 @@ export function applyFilters() {
 
     AppState.filteredData.sales = result;
     return;
-  }
-
-  /* ===============================
-     MONTH FILTER
-  ================================ */
-  if (f.month && f.month !== "Latest Month") {
-    result = result.filter(r => r.Month === f.month);
   }
 
   /* ===============================
