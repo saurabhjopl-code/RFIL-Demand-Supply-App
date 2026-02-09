@@ -1,5 +1,5 @@
 /*****************************************************************
- * APP INIT – MASTER BOOTSTRAP (STABLE & SAFE)
+ * APP INIT – FINAL STABLE BOOTSTRAP
  *****************************************************************/
 
 import { AppState } from "./state.js";
@@ -24,17 +24,10 @@ import { populateFilterDropdowns } from "../filters/filter-populate.js";
 import { initFilters } from "../filters/filter-ui.js";
 
 /* ===============================
-   VERIFY MODULES
+   REPORTS
 ================================ */
 
-import { verifyDRR } from "../logic/drr-verify.js";
-import { verifyStockSeparation } from "../logic/stock-verify.js";
-import { verifySC } from "../logic/sc-verify.js";
-import { verifyDirectDemand } from "../logic/direct-demand-verify.js";
-import { verifyPendancy } from "../logic/pendency-verify.js";
-import { verifyBuyBuckets } from "../logic/buy-bucket-verify.js";
-import { verifyPriorityRanking } from "../logic/priority-verify.js";
-import { verifyBuyBucketSummary } from "../logic/buy-bucket-summary-verify.js";
+import { renderDemandReport } from "../reports/demand-report.js";
 
 /* ===============================
    PROGRESS BAR
@@ -109,32 +102,19 @@ async function loadAllData() {
   await safeLoad(loadSizeCount, "Size Count");
   await safeLoad(loadProduction, "Production");
 
-  console.log("✅ Data loading phase completed");
+  console.log("✅ Data loading completed");
 
   runSanityChecks();
 
   populateFilterDropdowns();
   initFilters();
 
-  verifyDRR();
-  verifyStockSeparation();
-  verifySC();
-  verifyDirectDemand();
-  verifyPendancy();
-  verifyBuyBuckets();
-  verifyPriorityRanking();
-
-  /* ---------- BUY BUCKET SUMMARY ---------- */
-  verifyBuyBucketSummary();
+  /* ---------- DEMAND REPORT ---------- */
+  renderDemandReport();
 
   hideProgressBar();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  try {
-    loadAllData();
-  } catch (e) {
-    console.error("❌ Fatal init error", e);
-    hideProgressBar();
-  }
+  loadAllData();
 });
