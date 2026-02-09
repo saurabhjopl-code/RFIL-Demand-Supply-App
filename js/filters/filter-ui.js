@@ -1,46 +1,68 @@
+/*****************************************************************
+ * FILTER UI BINDING
+ * ---------------------------------------------------------------
+ * Rules:
+ * - No calculations
+ * - No DOM creation
+ * - Only read inputs, update state, apply filters
+ *****************************************************************/
+
 import { AppState } from "../core/state.js";
 import { applyFilters } from "./filter-engine.js";
 
 export function initFilters() {
-  const monthEl = document.querySelector(".filter-group select");
-  const fcEl = document.querySelectorAll(".filter-group select")[1];
-  const catEl = document.querySelectorAll(".filter-group select")[2];
-  const remarkEl = document.querySelectorAll(".filter-group select")[3];
-  const searchEl = document.querySelector(".search-input");
+  const selects = document.querySelectorAll(".filter-group select");
+  const searchInput = document.querySelector(".search-input");
 
-  monthEl.addEventListener("change", e => {
-    AppState.filters.month = e.target.value;
-    applyFilters();
-    logFilteredCount();
+  const monthEl = selects[0];
+  const fcEl = selects[1];
+  const categoryEl = selects[2];
+  const remarkEl = selects[3];
+
+  monthEl.addEventListener("change", () => {
+    AppState.filters.month = monthEl.value;
+    runFilterCycle("Month");
   });
 
-  fcEl.addEventListener("change", e => {
-    AppState.filters.fc = e.target.value;
-    applyFilters();
-    logFilteredCount();
+  fcEl.addEventListener("change", () => {
+    AppState.filters.fc = fcEl.value;
+    runFilterCycle("FC");
   });
 
-  catEl.addEventListener("change", e => {
-    AppState.filters.category = e.target.value;
-    applyFilters();
-    logFilteredCount();
+  categoryEl.addEventListener("change", () => {
+    AppState.filters.category = categoryEl.value;
+    runFilterCycle("Category");
   });
 
-  remarkEl.addEventListener("change", e => {
-    AppState.filters.remark = e.target.value;
-    applyFilters();
-    logFilteredCount();
+  remarkEl.addEventListener("change", () => {
+    AppState.filters.remark = remarkEl.value;
+    runFilterCycle("Company Remark");
   });
 
-  searchEl.addEventListener("input", e => {
-    AppState.filters.search = e.target.value;
-    applyFilters();
-    logFilteredCount();
+  searchInput.addEventListener("input", () => {
+    AppState.filters.search = searchInput.value;
+    runFilterCycle("Search");
   });
+
+  // Initial run
+  runFilterCycle("Initial Load");
 }
 
-function logFilteredCount() {
-  console.log(
-    `🔎 Filtered Sales Rows: ${AppState.filteredData.sales.length}`
-  );
+/* ===============================
+   VERIFICATION LOGGER
+================================ */
+
+function runFilterCycle(trigger) {
+  const before = AppState.filteredData.sales?.length
+    || AppState.rawData.sales.length;
+
+  applyFilters();
+
+  const after = AppState.filteredData.sales.length;
+
+  console.group(`🔎 Filter Applied (${trigger})`);
+  console.log("Before:", before);
+  console.log("After :", after);
+  console.log("Active Filters:", { ...AppState.filters });
+  console.groupEnd();
 }
