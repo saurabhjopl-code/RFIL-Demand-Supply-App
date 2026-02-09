@@ -1,102 +1,94 @@
 /*****************************************************************
- * DRR ENGINE – FINAL (MULTI-MONTH SAFE)
+ * DRR ENGINE – DAILY RUN RATE
  * ---------------------------------------------------------------
- * DRR = Total Units Sold ÷ Total Sale Days (selected months)
- * - Uses filtered sales data
- * - Uses Sale Days sheet correctly
- * - Style-level & SKU-level DRR
+ * DRR = Units Sold ÷ Sale Days
+ *
+ * Rules:
+ * - Uses FILTERED sales data
+ * - Uses Sale Days sheet
+ * - No DOM
+ * - No UI
+ * - Pure reusable logic
  *****************************************************************/
 
-import { getFilteredSalesData } from "../core/data-store.js";
-import { getSaleDaysMap } from "../core/data-store.js";
+import { AppState } from "../core/state.js";
 
-/* ===============================================================
+/* ===============================
    HELPERS
-=============================================================== */
+================================ */
 
-function getTotalSaleDaysForMonths(monthSet, saleDaysMap) {
-  let totalDays = 0;
-
-  monthSet.forEach(month => {
-    const days = Number(saleDaysMap[month]);
-    if (!isNaN(days)) totalDays += days;
+function getSaleDaysMap() {
+  const map = {};
+  AppState.rawData.saleDays.forEach(row => {
+    const month = row.Month;
+    const days = Number(row.Days) || 0;
+    if (month) map[month] = days;
   });
-
-  return totalDays || 1; // safety to avoid divide-by-zero
+  return map;
 }
 
-/* ===============================================================
-   STYLE LEVEL DRR
-=============================================================== */
+/* ===============================
+   SKU LEVEL DRR
+================================ */
 
-export function calculateStyleDRR() {
-  const sales = getFilteredSalesData();
+export function calculateSkuDRR() {
   const saleDaysMap = getSaleDaysMap();
+  const result = {};
 
-  const styleUnits = {};
-  const monthSet = new Set();
+  AppState.filteredData.sales.forEach(row => {
+    const key = `${row["Style ID"]}__${row.Size}`;
+    const units = Number(row.Units) || 0;
+    const days = saleDaysMap[row.Month] || 0;
 
-  sales.forEach(row => {
-    const styleId = row["Style ID"];
-    const units = Number(row["Units"]) || 0;
-    const month = row["Month"];
+    if (!result[key]) {
+      result[key] = {
+        styleId: row["Style ID"],
+        size: row.Size,
+        units: 0,
+        days: 0,
+        drr: 0
+      };
+    }
 
-    if (!styleId) return;
-
-    styleUnits[styleId] = (styleUnits[styleId] || 0) + units;
-    if (month) monthSet.add(month);
+    result[key].units += units;
+    result[key].days += days;
   });
 
-  const totalDays = getTotalSaleDaysForMonths(monthSet, saleDaysMap);
-
-  const result = {};
-  Object.keys(styleUnits).forEach(styleId => {
-    result[styleId] = {
-      units: styleUnits[styleId],
-      drr: styleUnits[styleId] / totalDays
-    };
+  Object.values(result).forEach(r => {
+    r.drr = r.days > 0 ? +(r.units / r.days).toFixed(2) : 0;
   });
 
   return result;
 }
 
-/* ===============================================================
-   SKU LEVEL DRR
-=============================================================== */
+/* ===============================
+   STYLE LEVEL DRR
+================================ */
 
-export function calculateSkuDRR() {
-  const sales = getFilteredSalesData();
+export function calculateStyleDRR() {
   const saleDaysMap = getSaleDaysMap();
+  const result = {};
 
-  const skuUnits = {};
-  const monthSet = new Set();
-
-  sales.forEach(row => {
+  AppState.filteredData.sales.forEach(row => {
     const styleId = row["Style ID"];
-    const size = row["Size"];
-    const units = Number(row["Units"]) || 0;
-    const month = row["Month"];
+    const units = Number(row.Units) || 0;
+    const days = saleDaysMap[row.Month] || 0;
 
-    if (!styleId || !size) return;
+    if (!result[styleId]) {
+      result[styleId] = {
+        styleId,
+        units: 0,
+        days: 0,
+        drr: 0
+      };
+    }
 
-    const key = `${styleId}__${size}`;
-    skuUnits[key] = {
-      styleId,
-      size,
-      units: (skuUnits[key]?.units || 0) + units
-    };
-
-    if (month) monthSet.add(month);
+    result[styleId].units += units;
+    result[styleId].days += days;
   });
 
-  const totalDays = getTotalSaleDaysForMonths(monthSet, saleDaysMap);
-
-  const result = {};
-  Object.keys(skuUnits).forEach(key => {
-    result[key] = {
-      ...skuUnits[key],
-      drr: skuUnits[key].units / totalDays
-    };
+  Object.values(result).forEach(r => {
+    r.drr = r.days > 0 ? +(r.units / r.days).toFixed(2) : 0;
   });
 
   return result;

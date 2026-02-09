@@ -1,93 +1,122 @@
 /*****************************************************************
- * FILTER POPULATE – FINAL (MONTH DEFAULT = ALL, SYNCED)
+ * FILTER DROPDOWN POPULATOR
+ * ---------------------------------------------------------------
+ * Rules:
+ * - Read-only from AppState.rawData
+ * - No filtering logic here
+ * - No calculations
+ * - No DOM structure changes
+ * - Populate values only once after data load
  *****************************************************************/
 
-import { getSalesData } from "../core/data-store.js";
-import { getStyleStatusData } from "../core/data-store.js";
+import { AppState } from "../core/state.js";
 
-export function populateFilters() {
-  populateMonthFilter();
-  populateCategoryFilter();
-  populateCompanyRemarkFilter();
+export function populateFilterDropdowns() {
+  console.group("🔧 Populating Filter Dropdowns");
 
-  // 🔒 CRITICAL: sync filter-engine on load
-  document.dispatchEvent(new Event("filters:changed"));
+  populateMonth();
+  populateFC();
+  populateCategory();
+  populateRemark();
+
+  console.groupEnd();
 }
 
-/* ===============================================================
-   MONTH FILTER (ALL SELECTED BY DEFAULT)
-=============================================================== */
+/* ===============================
+   MONTH FILTER
+================================ */
 
-function populateMonthFilter() {
-  const select = document.getElementById("filter-month");
+function populateMonth() {
+  const select = document.querySelectorAll(".filter-group select")[0];
   if (!select) return;
 
-  const sales = getSalesData();
-  const monthSet = new Set();
+  const months = Array.from(
+    new Set(AppState.rawData.sales.map(r => r.Month).filter(Boolean))
+  );
 
-  sales.forEach(row => {
-    if (row["Month"]) monthSet.add(row["Month"]);
-  });
-
-  const months = Array.from(monthSet).sort();
+  // Sort months naturally if possible
+  months.sort();
 
   select.innerHTML = "";
+  select.appendChild(new Option("Latest Month", "Latest Month"));
 
-  months.forEach(month => {
-    const option = document.createElement("option");
-    option.value = month;
-    option.textContent = month;
-    option.selected = true; // ALL selected
-    select.appendChild(option);
+  months.forEach(m => {
+    select.appendChild(new Option(m, m));
   });
+
+  console.log("✔ Month filter populated:", months.length);
 }
 
-/* ===============================================================
+/* ===============================
+   FC FILTER
+================================ */
+
+function populateFC() {
+  const select = document.querySelectorAll(".filter-group select")[1];
+  if (!select) return;
+
+  const fcs = Array.from(
+    new Set(AppState.rawData.sales.map(r => r.FC).filter(Boolean))
+  ).sort();
+
+  select.innerHTML = "";
+  select.appendChild(new Option("All FC", "All FC"));
+
+  fcs.forEach(fc => {
+    select.appendChild(new Option(fc, fc));
+  });
+
+  console.log("✔ FC filter populated:", fcs.length);
+}
+
+/* ===============================
    CATEGORY FILTER
-=============================================================== */
+================================ */
 
-function populateCategoryFilter() {
-  const select = document.getElementById("filter-category");
+function populateCategory() {
+  const select = document.querySelectorAll(".filter-group select")[2];
   if (!select) return;
 
-  const styles = getStyleStatusData();
-  const set = new Set();
+  const categories = Array.from(
+    new Set(
+      AppState.rawData.styleStatus.map(r => r.Category).filter(Boolean)
+    )
+  ).sort();
 
-  styles.forEach(row => {
-    if (row["Category"]) set.add(row["Category"]);
+  select.innerHTML = "";
+  select.appendChild(new Option("All Categories", "All Categories"));
+
+  categories.forEach(c => {
+    select.appendChild(new Option(c, c));
   });
 
-  select.innerHTML = `<option value="ALL">All Categories</option>`;
-
-  Array.from(set).sort().forEach(cat => {
-    const opt = document.createElement("option");
-    opt.value = cat;
-    opt.textContent = cat;
-    select.appendChild(opt);
-  });
+  console.log("✔ Category filter populated:", categories.length);
 }
 
-/* ===============================================================
+/* ===============================
    COMPANY REMARK FILTER
-=============================================================== */
+================================ */
 
-function populateCompanyRemarkFilter() {
-  const select = document.getElementById("filter-remark");
+function populateRemark() {
+  const select = document.querySelectorAll(".filter-group select")[3];
   if (!select) return;
 
-  const styles = getStyleStatusData();
-  const set = new Set();
+  const remarks = Array.from(
+    new Set(
+      AppState.rawData.styleStatus
+        .map(r => r["Company Remark"])
+        .filter(Boolean)
+    )
+  ).sort();
 
-  styles.forEach(row => {
-    if (row["Company Remark"]) set.add(row["Company Remark"]);
+  select.innerHTML = "";
+  select.appendChild(
+    new Option("All Company Remarks", "All Company Remarks")
+  );
+
+  remarks.forEach(r => {
+    select.appendChild(new Option(r, r));
   });
 
-  select.innerHTML = `<option value="ALL">All Company Remarks</option>`;
-
-  Array.from(set).sort().forEach(r => {
-    const opt = document.createElement("option");
-    opt.value = r;
-    opt.textContent = r;
-    select.appendChild(opt);
-  });
+  console.log("✔ Company Remark filter populated:", remarks.length);
 }
