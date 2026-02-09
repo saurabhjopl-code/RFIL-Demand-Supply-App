@@ -1,46 +1,76 @@
+/*****************************************************************
+ * FILTER ENGINE – PURE DATA FILTERING
+ * ---------------------------------------------------------------
+ * Rules:
+ * - Never mutate rawData
+ * - Write only to filteredData
+ * - No DOM access
+ * - Search overrides all other filters
+ *****************************************************************/
+
 import { AppState } from "../core/state.js";
 
 export function applyFilters() {
-  let data = [...AppState.rawData.sales];
+  const rawSales = AppState.rawData.sales || [];
+  let result = [...rawSales];
 
-  // SEARCH OVERRIDES EVERYTHING
-  if (AppState.filters.search.trim() !== "") {
-    const q = AppState.filters.search.toLowerCase();
-    AppState.filteredData.sales = data.filter(row =>
-      (row["Style ID"] && row["Style ID"].toLowerCase().includes(q)) ||
-      (row["MP SKU"] && row["MP SKU"].toLowerCase().includes(q)) ||
-      (row["Uniware SKU"] && row["Uniware SKU"].toLowerCase().includes(q))
+  const f = AppState.filters;
+
+  /* ===============================
+     SEARCH OVERRIDE
+  ================================ */
+  if (f.search && f.search.trim() !== "") {
+    const q = f.search.toLowerCase();
+
+    result = result.filter(r =>
+      (r["Style ID"] && r["Style ID"].toLowerCase().includes(q)) ||
+      (r["MP SKU"] && r["MP SKU"].toLowerCase().includes(q)) ||
+      (r["Uniware SKU"] && r["Uniware SKU"].toLowerCase().includes(q))
     );
+
+    AppState.filteredData.sales = result;
     return;
   }
 
-  // MONTH
-  if (AppState.filters.month !== "Latest Month") {
-    data = data.filter(r => r.Month === AppState.filters.month);
+  /* ===============================
+     MONTH FILTER
+  ================================ */
+  if (f.month && f.month !== "Latest Month") {
+    result = result.filter(r => r.Month === f.month);
   }
 
-  // FC
-  if (AppState.filters.fc !== "All FC") {
-    data = data.filter(r => r.FC === AppState.filters.fc);
+  /* ===============================
+     FC FILTER
+  ================================ */
+  if (f.fc && f.fc !== "All FC") {
+    result = result.filter(r => r.FC === f.fc);
   }
 
-  // CATEGORY
-  if (AppState.filters.category !== "All Categories") {
-    const allowedStyles = AppState.rawData.styleStatus
-      .filter(s => s.Category === AppState.filters.category)
-      .map(s => s["Style ID"]);
+  /* ===============================
+     CATEGORY FILTER
+  ================================ */
+  if (f.category && f.category !== "All Categories") {
+    const allowedStyles = new Set(
+      AppState.rawData.styleStatus
+        .filter(s => s.Category === f.category)
+        .map(s => s["Style ID"])
+    );
 
-    data = data.filter(r => allowedStyles.includes(r["Style ID"]));
+    result = result.filter(r => allowedStyles.has(r["Style ID"]));
   }
 
-  // COMPANY REMARK
-  if (AppState.filters.remark !== "All Company Remarks") {
-    const allowedStyles = AppState.rawData.styleStatus
-      .filter(s => s["Company Remark"] === AppState.filters.remark)
-      .map(s => s["Style ID"]);
+  /* ===============================
+     COMPANY REMARK FILTER
+  ================================ */
+  if (f.remark && f.remark !== "All Company Remarks") {
+    const allowedStyles = new Set(
+      AppState.rawData.styleStatus
+        .filter(s => s["Company Remark"] === f.remark)
+        .map(s => s["Style ID"])
+    );
 
-    data = data.filter(r => allowedStyles.includes(r["Style ID"]));
+    result = result.filter(r => allowedStyles.has(r["Style ID"]));
   }
 
-  AppState.filteredData.sales = data;
+  AppState.filteredData.sales = result;
 }
