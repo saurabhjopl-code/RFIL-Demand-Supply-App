@@ -33,6 +33,7 @@ import { verifySC } from "../logic/sc-verify.js";
 import { verifyDirectDemand } from "../logic/direct-demand-verify.js";
 import { verifyPendancy } from "../logic/pendency-verify.js";
 import { verifyBuyBuckets } from "../logic/buy-bucket-verify.js";
+import { verifyPriorityRanking } from "../logic/priority-verify.js";
 
 /* ===============================
    PROGRESS BAR
@@ -119,9 +120,10 @@ async function loadAllData() {
   verifySC();
   verifyDirectDemand();
   verifyPendancy();
-
-  /* ---------- BUY BUCKET ---------- */
   verifyBuyBuckets();
+
+  /* ---------- PRIORITY RANK ---------- */
+  verifyPriorityRanking();
 
   hideProgressBar();
 }
