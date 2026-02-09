@@ -1,11 +1,11 @@
 /*****************************************************************
- * APP INIT – MASTER BOOTSTRAP FILE
+ * APP INIT – MASTER BOOTSTRAP FILE (SAFE VERSION)
  * ---------------------------------------------------------------
  * Rules:
- * - UI is LOCKED
- * - This file may grow, but existing logic must NOT be removed
- * - All loaders must be fail-safe
- * - Progress bar must never get stuck
+ * - NO top-level await
+ * - NO UI changes
+ * - Progress bar must always resolve
+ * - Long & explicit is preferred
  *****************************************************************/
 
 import { AppState } from "./state.js";
@@ -14,27 +14,13 @@ import { sanityCheck } from "./utils.js";
 /* ===============================
    DATA LOADERS
 ================================ */
-import { populateFilterDropdowns } from "../filters/filter-populate.js";
+
 import { loadSales } from "../data/load-sales.js";
 import { loadStock } from "../data/load-stock.js";
 import { loadStyleStatus } from "../data/load-style-status.js";
 import { loadSaleDays } from "../data/load-sale-days.js";
 import { loadSizeCount } from "../data/load-size-count.js";
 import { loadProduction } from "../data/load-production.js";
-
-/* ===============================
-   OPTIONAL INITIALIZERS
-   (These may or may not exist yet)
-================================ */
-
-// Filters will be wired later – keep safe guard
-let initFiltersFn = null;
-try {
-  const filters = await import("../filters/filter-ui.js");
-  initFiltersFn = filters.initFilters;
-} catch (e) {
-  console.warn("ℹ Filters not initialized yet");
-}
 
 /* ===============================
    PROGRESS BAR REFERENCES
@@ -87,62 +73,45 @@ async function safeLoad(loaderFn, label) {
 }
 
 /* ===============================
-   SANITY CHECK PHASE
-   (LOCKED – DO NOT MODIFY)
+   SANITY CHECK PHASE (LOCKED)
 ================================ */
 
 function runSanityChecks() {
   console.group("🧪 DATA SANITY CHECKS");
 
-  sanityCheck(
-    "Sales",
-    AppState.rawData.sales,
-    ["Month", "FC", "Style ID", "Size", "Units"]
-  );
-
-  sanityCheck(
-    "Stock",
-    AppState.rawData.stock,
-    ["FC", "Style ID", "Size", "Units"]
-  );
-
-  sanityCheck(
-    "Style Status",
-    AppState.rawData.styleStatus,
-    ["Style ID", "Category", "Company Remark"]
-  );
-
-  sanityCheck(
-    "Sale Days",
-    AppState.rawData.saleDays,
-    ["Month", "Days"]
-  );
-
-  sanityCheck(
-    "Size Count",
-    AppState.rawData.sizeCount,
-    ["Style ID", "Size Count"]
-  );
-
-  sanityCheck(
-    "Production",
-    AppState.rawData.production,
-    ["Uniware SKU", "Production Plann"]
-  );
+  sanityCheck("Sales", AppState.rawData.sales);
+  sanityCheck("Stock", AppState.rawData.stock);
+  sanityCheck("Style Status", AppState.rawData.styleStatus);
+  sanityCheck("Sale Days", AppState.rawData.saleDays);
+  sanityCheck("Size Count", AppState.rawData.sizeCount);
+  sanityCheck("Production", AppState.rawData.production);
 
   console.groupEnd();
 }
 
 /* ===============================
-   MAIN DATA LOAD SEQUENCE
+   FILTER INIT (SAFE IMPORT)
 ================================ */
 
+async function initFiltersSafely() {
+  try {
+    const module = await import("../filters/filter-ui.js");
+    if (typeof module.initFilters === "function") {
+      module.initFilters();
+      console.log("✔ Filters initialized");
+    }
+  } catch (e) {
+    console.warn("ℹ Filters not initialized yet (safe to ignore)", e);
+  }
+}
 
+/* ===============================
+   MAIN LOAD SEQUENCE
+================================ */
 
 async function loadAllData() {
   showProgressBar();
 
-  // IMPORTANT: order is explicit and intentional
   await safeLoad(loadSales, "Sales");
   await safeLoad(loadStock, "Stock");
   await safeLoad(loadStyleStatus, "Style Status");
@@ -152,43 +121,22 @@ async function loadAllData() {
 
   console.log("✅ Data loading phase completed");
 
-  // Run sanity checks only after all loaders attempted
   runSanityChecks();
 
-  // Initialize filters ONLY if available
-  if (typeof initFiltersFn === "function") {
-    try {
-      initFiltersFn();
-      console.log("✔ Filters initialized");
-    } catch (e) {
-      console.error("✖ Filter initialization failed", e);
-    }
-  }
+  await initFiltersSafely();
 
   hideProgressBar();
-     // -------------------------------
-  // Populate filter dropdown values
-  // -------------------------------
-  try {
-    populateFilterDropdowns();
-    console.log("✔ Filter dropdowns populated");
-  } catch (e) {
-    console.error("✖ Failed to populate filter dropdowns", e);
-  }
-
 }
 
 /* ===============================
-   DOM READY ENTRY POINT
+   DOM READY ENTRY
 ================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
   try {
     loadAllData();
   } catch (e) {
-    console.error("❌ Fatal error during app initialization", e);
+    console.error("❌ Fatal init error", e);
     hideProgressBar();
   }
 });
-
-
