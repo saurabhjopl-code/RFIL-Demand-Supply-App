@@ -1,9 +1,5 @@
 /*****************************************************************
- * FILTER POPULATE – FINAL (MONTH DEFAULT = ALL)
- * ---------------------------------------------------------------
- * - Populates all filters
- * - Month filter defaults to ALL months selected
- * - Safe for multi-month DRR logic
+ * FILTER POPULATE – FINAL (MONTH DEFAULT = ALL, SYNCED)
  *****************************************************************/
 
 import { getSalesData } from "../core/data-store.js";
@@ -13,6 +9,9 @@ export function populateFilters() {
   populateMonthFilter();
   populateCategoryFilter();
   populateCompanyRemarkFilter();
+
+  // 🔒 CRITICAL: sync filter-engine on load
+  document.dispatchEvent(new Event("filters:changed"));
 }
 
 /* ===============================================================
@@ -38,7 +37,7 @@ function populateMonthFilter() {
     const option = document.createElement("option");
     option.value = month;
     option.textContent = month;
-    option.selected = true; // 🔒 DEFAULT: ALL MONTHS SELECTED
+    option.selected = true; // ALL selected
     select.appendChild(option);
   });
 }
@@ -60,14 +59,12 @@ function populateCategoryFilter() {
 
   select.innerHTML = `<option value="ALL">All Categories</option>`;
 
-  Array.from(set)
-    .sort()
-    .forEach(cat => {
-      const opt = document.createElement("option");
-      opt.value = cat;
-      opt.textContent = cat;
-      select.appendChild(opt);
-    });
+  Array.from(set).sort().forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    select.appendChild(opt);
+  });
 }
 
 /* ===============================================================
@@ -87,12 +84,10 @@ function populateCompanyRemarkFilter() {
 
   select.innerHTML = `<option value="ALL">All Company Remarks</option>`;
 
-  Array.from(set)
-    .sort()
-    .forEach(r => {
-      const opt = document.createElement("option");
-      opt.value = r;
-      opt.textContent = r;
-      select.appendChild(opt);
-    });
+  Array.from(set).sort().forEach(r => {
+    const opt = document.createElement("option");
+    opt.value = r;
+    opt.textContent = r;
+    select.appendChild(opt);
+  });
 }
