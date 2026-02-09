@@ -30,6 +30,7 @@ import { initFilters } from "../filters/filter-ui.js";
 import { verifyDRR } from "../logic/drr-verify.js";
 import { verifyStockSeparation } from "../logic/stock-verify.js";
 import { verifySC } from "../logic/sc-verify.js";
+import { verifyDirectDemand } from "../logic/direct-demand-verify.js";
 
 /* ===============================
    PROGRESS BAR
@@ -125,11 +126,14 @@ async function loadAllData() {
   /* ---------- DRR ---------- */
   verifyDRR();
 
-  /* ---------- STOCK SPLIT ---------- */
+  /* ---------- STOCK ---------- */
   verifyStockSeparation();
 
   /* ---------- STOCK COVER ---------- */
   verifySC();
+
+  /* ---------- DIRECT DEMAND ---------- */
+  verifyDirectDemand();
 
   hideProgressBar();
 }
