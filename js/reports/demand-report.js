@@ -1,10 +1,10 @@
 /*****************************************************************
- * DEMAND REPORT – STYLE → SKU (FINAL)
+ * DEMAND REPORT – FINAL TABLE RENDER
  * ---------------------------------------------------------------
- * - Single file
- * - No subfolders
- * - No UI changes
- * - Expand / collapse included
+ * - Uses existing report-content container
+ * - Renders header + rows
+ * - Style → SKU expand / collapse
+ * - NO UI / CSS changes
  *****************************************************************/
 
 import { calculateStyleDRR, calculateSkuDRR } from "../logic/drr-engine.js";
@@ -16,75 +16,89 @@ import { calculateStylePriorityRanking } from "../logic/priority-engine.js";
 import { calculateStyleStock, calculateSkuStock } from "../logic/stock-engine.js";
 
 /* ===============================================================
-   MAIN RENDER FUNCTION
+   MAIN RENDER
 =============================================================== */
 
 export function renderDemandReport() {
-  const container = document.getElementById("demandReport");
+  const container = document.getElementById("report-content");
   if (!container) return;
 
   container.innerHTML = "";
 
-  /* ---------- LOAD ALL LOGIC OUTPUTS ---------- */
+  /* ===============================
+     HEADER ROW
+  ================================ */
+
+  const header = document.createElement("div");
+  header.className = "report-row report-header";
+  header.innerHTML = `
+    <div></div>
+    <div>Style / Size</div>
+    <div>Sales</div>
+    <div>Seller Stock</div>
+    <div>FC Stock</div>
+    <div>DRR</div>
+    <div>SC</div>
+    <div>Direct Demand</div>
+    <div>In Production</div>
+    <div>Pendancy</div>
+    <div>Buy Bucket</div>
+    <div>Priority</div>
+  `;
+  container.appendChild(header);
+
+  /* ===============================
+     LOAD LOGIC OUTPUTS
+  ================================ */
 
   const styleDRR = calculateStyleDRR();
   const skuDRR = calculateSkuDRR();
-
   const styleSC = calculateStyleSC();
   const skuSC = calculateSkuSC();
-
   const styleDemand = calculateStyleDirectDemand();
   const skuDemand = calculateSkuDirectDemand();
-
-  const stylePendancy = calculateStylePendancy();
-  const skuPendancy = calculateSkuPendancy();
-
-  const styleBuckets = calculateStyleBuyBucket();
-  const skuBuckets = calculateSkuBuyBucket();
-
+  const stylePend = calculateStylePendancy();
+  const skuPend = calculateSkuPendancy();
+  const styleBucket = calculateStyleBuyBucket();
+  const skuBucket = calculateSkuBuyBucket();
   const styleStock = calculateStyleStock();
   const skuStock = calculateSkuStock();
 
   const priorityList = calculateStylePriorityRanking();
   const priorityMap = {};
-  priorityList.forEach(r => {
-    priorityMap[r.styleId] = r.priorityRank;
-  });
+  priorityList.forEach(r => (priorityMap[r.styleId] = r.priorityRank));
 
-  /* ---------- BUILD STYLE OBJECT ---------- */
+  /* ===============================
+     BUILD STYLE OBJECT
+  ================================ */
 
   const styles = {};
 
   Object.keys(styleDRR).forEach(styleId => {
     styles[styleId] = {
       styleId,
-      sales: styleDRR[styleId]?.units || 0,
+      sales: styleDRR[styleId].units || 0,
       sellerStock: styleStock[styleId]?.sellerStock || 0,
       fcStock: styleStock[styleId]?.fcStock || 0,
-      totalStock: styleStock[styleId]?.totalStock || 0,
-      drr: styleDRR[styleId]?.drr || 0,
+      drr: styleDRR[styleId].drr || 0,
       sc: styleSC[styleId]?.sc || 0,
       directDemand: styleDemand[styleId]?.directDemand || 0,
-      inProduction: stylePendancy[styleId]?.inProduction || 0,
-      pendancy: stylePendancy[styleId]?.pendancy || 0,
-      buyBucket: styleBuckets[styleId]?.bucket || "LOW",
-      priorityRank: priorityMap[styleId] || 9999,
+      inProduction: stylePend[styleId]?.inProduction || 0,
+      pendancy: stylePend[styleId]?.pendancy || 0,
+      buyBucket: styleBucket[styleId]?.bucket || "LOW",
+      priority: priorityMap[styleId] || 9999,
       skus: []
     };
   });
 
-  /* ---------- ATTACH SKU DATA ---------- */
-
   Object.keys(skuDRR).forEach(key => {
     const sku = skuDRR[key];
-    const styleId = sku.styleId;
-
-    if (!styles[styleId]) return;
+    const style = styles[sku.styleId];
+    if (!style) return;
 
     const stock = skuStock[key] || {};
-    const pend = skuPendancy[key] || {};
+    const pend = skuPend[key] || {};
 
-    // Skip noise
     if (
       (sku.units || 0) === 0 &&
       (stock.sellerStock || 0) === 0 &&
@@ -93,87 +107,84 @@ export function renderDemandReport() {
       return;
     }
 
-    styles[styleId].skus.push({
+    style.skus.push({
       size: sku.size,
       sales: sku.units || 0,
       sellerStock: stock.sellerStock || 0,
       fcStock: stock.fcStock || 0,
-      totalStock: stock.totalStock || 0,
       drr: sku.drr || 0,
       sc: skuSC[key]?.sc || 0,
       directDemand: skuDemand[key]?.directDemand || 0,
       inProduction: pend.inProduction || 0,
       pendancy: pend.pendancy || 0,
-      buyBucket: skuBuckets[key]?.bucket || "LOW"
+      buyBucket: skuBucket[key]?.bucket || "LOW"
     });
   });
 
-  /* ---------- SORT BY PRIORITY ---------- */
+  /* ===============================
+     SORT & RENDER
+  ================================ */
 
-  const sortedStyles = Object.values(styles).sort(
-    (a, b) => a.priorityRank - b.priorityRank
-  );
-
-  /* ---------- RENDER ---------- */
-
-  sortedStyles.forEach(style => {
-    const styleRow = document.createElement("div");
-    styleRow.className = "demand-style-row";
-    styleRow.innerHTML = `
-      <div class="cell expand-toggle">+</div>
-      <div class="cell">${style.styleId}</div>
-      <div class="cell">${style.sales}</div>
-      <div class="cell">${style.sellerStock}</div>
-      <div class="cell">${style.fcStock}</div>
-      <div class="cell">${style.drr.toFixed(2)}</div>
-      <div class="cell">${style.sc.toFixed(1)}</div>
-      <div class="cell">${style.directDemand}</div>
-      <div class="cell">${style.inProduction}</div>
-      <div class="cell">${style.pendancy}</div>
-      <div class="cell">${style.buyBucket}</div>
-      <div class="cell">${style.priorityRank}</div>
-    `;
-
-    container.appendChild(styleRow);
-
-    const skuWrapper = document.createElement("div");
-    skuWrapper.className = "sku-wrapper hidden";
-
-    style.skus.forEach(sku => {
-      const skuRow = document.createElement("div");
-      skuRow.className = "demand-sku-row";
-      skuRow.innerHTML = `
-        <div class="cell"></div>
-        <div class="cell">Size ${sku.size}</div>
-        <div class="cell">${sku.sales}</div>
-        <div class="cell">${sku.sellerStock}</div>
-        <div class="cell">${sku.fcStock}</div>
-        <div class="cell">${sku.drr.toFixed(2)}</div>
-        <div class="cell">${sku.sc.toFixed(1)}</div>
-        <div class="cell">${sku.directDemand}</div>
-        <div class="cell">${sku.inProduction}</div>
-        <div class="cell">${sku.pendancy}</div>
-        <div class="cell">${sku.buyBucket}</div>
-        <div class="cell"></div>
+  Object.values(styles)
+    .sort((a, b) => a.priority - b.priority)
+    .forEach(style => {
+      const styleRow = document.createElement("div");
+      styleRow.className = "report-row style-row";
+      styleRow.innerHTML = `
+        <div class="toggle">+</div>
+        <div>${style.styleId}</div>
+        <div>${style.sales}</div>
+        <div>${style.sellerStock}</div>
+        <div>${style.fcStock}</div>
+        <div>${style.drr.toFixed(2)}</div>
+        <div>${style.sc.toFixed(1)}</div>
+        <div>${style.directDemand}</div>
+        <div>${style.inProduction}</div>
+        <div>${style.pendancy}</div>
+        <div>${style.buyBucket}</div>
+        <div>${style.priority}</div>
       `;
-      skuWrapper.appendChild(skuRow);
+      container.appendChild(styleRow);
+
+      const skuWrap = document.createElement("div");
+      skuWrap.className = "sku-wrapper hidden";
+
+      style.skus.forEach(sku => {
+        const skuRow = document.createElement("div");
+        skuRow.className = "report-row sku-row";
+        skuRow.innerHTML = `
+          <div></div>
+          <div>Size ${sku.size}</div>
+          <div>${sku.sales}</div>
+          <div>${sku.sellerStock}</div>
+          <div>${sku.fcStock}</div>
+          <div>${sku.drr.toFixed(2)}</div>
+          <div>${sku.sc.toFixed(1)}</div>
+          <div>${sku.directDemand}</div>
+          <div>${sku.inProduction}</div>
+          <div>${sku.pendancy}</div>
+          <div>${sku.buyBucket}</div>
+          <div></div>
+        `;
+        skuWrap.appendChild(skuRow);
+      });
+
+      container.appendChild(skuWrap);
     });
 
-    container.appendChild(skuWrapper);
-  });
+  /* ===============================
+     EXPAND / COLLAPSE
+  ================================ */
 
-  /* ---------- EXPAND / COLLAPSE ---------- */
-
-  container.addEventListener("click", e => {
-    const toggle = e.target.closest(".expand-toggle");
+  container.onclick = e => {
+    const toggle = e.target.closest(".toggle");
     if (!toggle) return;
 
-    const styleRow = toggle.closest(".demand-style-row");
-    const skuWrapper = styleRow.nextElementSibling;
-    if (!skuWrapper) return;
+    const styleRow = toggle.closest(".style-row");
+    const skuWrap = styleRow.nextElementSibling;
 
-    const isOpen = !skuWrapper.classList.contains("hidden");
-    skuWrapper.classList.toggle("hidden", isOpen);
-    toggle.textContent = isOpen ? "+" : "−";
-  });
+    const open = !skuWrap.classList.contains("hidden");
+    skuWrap.classList.toggle("hidden", open);
+    toggle.textContent = open ? "+" : "−";
+  };
 }
