@@ -31,6 +31,7 @@ import { verifyDRR } from "../logic/drr-verify.js";
 import { verifyStockSeparation } from "../logic/stock-verify.js";
 import { verifySC } from "../logic/sc-verify.js";
 import { verifyDirectDemand } from "../logic/direct-demand-verify.js";
+import { verifyPendancy } from "../logic/pendency-verify.js";
 
 /* ===============================
    PROGRESS BAR
@@ -123,17 +124,13 @@ async function loadAllData() {
     console.warn("ℹ Filter listeners init skipped", e);
   }
 
-  /* ---------- DRR ---------- */
   verifyDRR();
-
-  /* ---------- STOCK ---------- */
   verifyStockSeparation();
-
-  /* ---------- STOCK COVER ---------- */
   verifySC();
-
-  /* ---------- DIRECT DEMAND ---------- */
   verifyDirectDemand();
+
+  /* ---------- PENDANCY ---------- */
+  verifyPendancy();
 
   hideProgressBar();
 }
