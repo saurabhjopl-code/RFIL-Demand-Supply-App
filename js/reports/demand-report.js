@@ -1,10 +1,10 @@
 /*****************************************************************
- * DEMAND REPORT – FINAL, ROBUST RENDERER
+ * DEMAND REPORT – FINAL (GRID-CORRECT)
  * ---------------------------------------------------------------
- * - NO hard-coded container IDs
- * - Renders inside active Demand tab
- * - Style → SKU expand / collapse
- * - NO UI / CSS changes
+ * - Uses existing report-panel
+ * - Uses existing report-table grid wrapper
+ * - NO CSS changes
+ * - NO UI changes
  *****************************************************************/
 
 import { calculateStyleDRR, calculateSkuDRR } from "../logic/drr-engine.js";
@@ -15,46 +15,22 @@ import { calculateStyleBuyBucket, calculateSkuBuyBucket } from "../logic/buy-buc
 import { calculateStylePriorityRanking } from "../logic/priority-engine.js";
 import { calculateStyleStock, calculateSkuStock } from "../logic/stock-engine.js";
 
-/* ===============================================================
-   FIND ACTIVE DEMAND CONTAINER (SAFE)
-=============================================================== */
-
-function getDemandContainer() {
-  // 1️⃣ Active report panel (preferred)
-  const activePanel = document.querySelector(
-    ".report-panel.active, .report-tab-content.active"
-  );
-  if (activePanel) return activePanel;
-
-  // 2️⃣ Demand tab content fallback
-  const demandByData = document.querySelector(
-    '[data-report="demand"]'
-  );
-  if (demandByData) return demandByData;
-
-  // 3️⃣ Last resort: visible section below tabs
-  const sections = Array.from(
-    document.querySelectorAll("section, div")
-  ).filter(el => el.offsetParent !== null);
-
-  return sections[sections.length - 1] || null;
-}
-
-/* ===============================================================
-   MAIN RENDER
-=============================================================== */
-
 export function renderDemandReport() {
-  const container = getDemandContainer();
-  if (!container) {
-    console.warn("Demand report container not found");
-    return;
-  }
+  const panel = document.getElementById("demandReport");
+  if (!panel) return;
 
-  container.innerHTML = "";
+  panel.innerHTML = "";
 
   /* ===============================
-     HEADER ROW
+     GRID WRAPPER (CRITICAL)
+  ================================ */
+
+  const table = document.createElement("div");
+  table.className = "report-table";
+  panel.appendChild(table);
+
+  /* ===============================
+     HEADER
   ================================ */
 
   const header = document.createElement("div");
@@ -73,10 +49,10 @@ export function renderDemandReport() {
     <div>Buy Bucket</div>
     <div>Priority</div>
   `;
-  container.appendChild(header);
+  table.appendChild(header);
 
   /* ===============================
-     LOAD LOGIC OUTPUTS
+     LOAD LOGIC
   ================================ */
 
   const styleDRR = calculateStyleDRR();
@@ -92,12 +68,13 @@ export function renderDemandReport() {
   const styleStock = calculateStyleStock();
   const skuStock = calculateSkuStock();
 
-  const priorityList = calculateStylePriorityRanking();
   const priorityMap = {};
-  priorityList.forEach(r => (priorityMap[r.styleId] = r.priorityRank));
+  calculateStylePriorityRanking().forEach(
+    r => (priorityMap[r.styleId] = r.priorityRank)
+  );
 
   /* ===============================
-     BUILD STYLE OBJECT
+     BUILD STYLE DATA
   ================================ */
 
   const styles = {};
@@ -105,10 +82,10 @@ export function renderDemandReport() {
   Object.keys(styleDRR).forEach(styleId => {
     styles[styleId] = {
       styleId,
-      sales: styleDRR[styleId]?.units || 0,
+      sales: styleDRR[styleId].units || 0,
       sellerStock: styleStock[styleId]?.sellerStock || 0,
       fcStock: styleStock[styleId]?.fcStock || 0,
-      drr: styleDRR[styleId]?.drr || 0,
+      drr: styleDRR[styleId].drr || 0,
       sc: styleSC[styleId]?.sc || 0,
       directDemand: styleDemand[styleId]?.directDemand || 0,
       inProduction: stylePend[styleId]?.inProduction || 0,
@@ -131,9 +108,7 @@ export function renderDemandReport() {
       (sku.units || 0) === 0 &&
       (stock.sellerStock || 0) === 0 &&
       (pend.pendancy || 0) === 0
-    ) {
-      return;
-    }
+    ) return;
 
     style.skus.push({
       size: sku.size,
@@ -150,15 +125,15 @@ export function renderDemandReport() {
   });
 
   /* ===============================
-     SORT & RENDER
+     RENDER
   ================================ */
 
   Object.values(styles)
     .sort((a, b) => a.priority - b.priority)
     .forEach(style => {
-      const styleRow = document.createElement("div");
-      styleRow.className = "report-row style-row";
-      styleRow.innerHTML = `
+      const row = document.createElement("div");
+      row.className = "report-row style-row";
+      row.innerHTML = `
         <div class="toggle">+</div>
         <div>${style.styleId}</div>
         <div>${style.sales}</div>
@@ -172,7 +147,7 @@ export function renderDemandReport() {
         <div>${style.buyBucket}</div>
         <div>${style.priority}</div>
       `;
-      container.appendChild(styleRow);
+      table.appendChild(row);
 
       const skuWrap = document.createElement("div");
       skuWrap.className = "sku-wrapper hidden";
@@ -197,14 +172,14 @@ export function renderDemandReport() {
         skuWrap.appendChild(skuRow);
       });
 
-      container.appendChild(skuWrap);
+      table.appendChild(skuWrap);
     });
 
   /* ===============================
      EXPAND / COLLAPSE
   ================================ */
 
-  container.onclick = e => {
+  table.onclick = e => {
     const toggle = e.target.closest(".toggle");
     if (!toggle) return;
 
