@@ -32,6 +32,7 @@ import { verifyStockSeparation } from "../logic/stock-verify.js";
 import { verifySC } from "../logic/sc-verify.js";
 import { verifyDirectDemand } from "../logic/direct-demand-verify.js";
 import { verifyPendancy } from "../logic/pendency-verify.js";
+import { verifyBuyBuckets } from "../logic/buy-bucket-verify.js";
 
 /* ===============================
    PROGRESS BAR
@@ -110,27 +111,17 @@ async function loadAllData() {
 
   runSanityChecks();
 
-  try {
-    populateFilterDropdowns();
-    console.log("✔ Filter dropdowns populated");
-  } catch (e) {
-    console.error("✖ Filter dropdown population failed", e);
-  }
-
-  try {
-    initFilters();
-    console.log("✔ Filter listeners initialized");
-  } catch (e) {
-    console.warn("ℹ Filter listeners init skipped", e);
-  }
+  populateFilterDropdowns();
+  initFilters();
 
   verifyDRR();
   verifyStockSeparation();
   verifySC();
   verifyDirectDemand();
-
-  /* ---------- PENDANCY ---------- */
   verifyPendancy();
+
+  /* ---------- BUY BUCKET ---------- */
+  verifyBuyBuckets();
 
   hideProgressBar();
 }
