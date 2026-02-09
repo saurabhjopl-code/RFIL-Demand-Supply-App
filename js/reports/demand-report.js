@@ -1,8 +1,8 @@
 /*****************************************************************
- * DEMAND REPORT – FINAL TABLE RENDER
+ * DEMAND REPORT – FINAL, ROBUST RENDERER
  * ---------------------------------------------------------------
- * - Uses existing report-content container
- * - Renders header + rows
+ * - NO hard-coded container IDs
+ * - Renders inside active Demand tab
  * - Style → SKU expand / collapse
  * - NO UI / CSS changes
  *****************************************************************/
@@ -16,12 +16,40 @@ import { calculateStylePriorityRanking } from "../logic/priority-engine.js";
 import { calculateStyleStock, calculateSkuStock } from "../logic/stock-engine.js";
 
 /* ===============================================================
+   FIND ACTIVE DEMAND CONTAINER (SAFE)
+=============================================================== */
+
+function getDemandContainer() {
+  // 1️⃣ Active report panel (preferred)
+  const activePanel = document.querySelector(
+    ".report-panel.active, .report-tab-content.active"
+  );
+  if (activePanel) return activePanel;
+
+  // 2️⃣ Demand tab content fallback
+  const demandByData = document.querySelector(
+    '[data-report="demand"]'
+  );
+  if (demandByData) return demandByData;
+
+  // 3️⃣ Last resort: visible section below tabs
+  const sections = Array.from(
+    document.querySelectorAll("section, div")
+  ).filter(el => el.offsetParent !== null);
+
+  return sections[sections.length - 1] || null;
+}
+
+/* ===============================================================
    MAIN RENDER
 =============================================================== */
 
 export function renderDemandReport() {
-  const container = document.getElementById("report-content");
-  if (!container) return;
+  const container = getDemandContainer();
+  if (!container) {
+    console.warn("Demand report container not found");
+    return;
+  }
 
   container.innerHTML = "";
 
@@ -77,10 +105,10 @@ export function renderDemandReport() {
   Object.keys(styleDRR).forEach(styleId => {
     styles[styleId] = {
       styleId,
-      sales: styleDRR[styleId].units || 0,
+      sales: styleDRR[styleId]?.units || 0,
       sellerStock: styleStock[styleId]?.sellerStock || 0,
       fcStock: styleStock[styleId]?.fcStock || 0,
-      drr: styleDRR[styleId].drr || 0,
+      drr: styleDRR[styleId]?.drr || 0,
       sc: styleSC[styleId]?.sc || 0,
       directDemand: styleDemand[styleId]?.directDemand || 0,
       inProduction: stylePend[styleId]?.inProduction || 0,
