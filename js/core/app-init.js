@@ -14,7 +14,7 @@ import { sanityCheck } from "./utils.js";
 /* ===============================
    DATA LOADERS
 ================================ */
-
+import { populateFilterDropdowns } from "../filters/filter-populate.js";
 import { loadSales } from "../data/load-sales.js";
 import { loadStock } from "../data/load-stock.js";
 import { loadStyleStatus } from "../data/load-style-status.js";
@@ -178,3 +178,4 @@ document.addEventListener("DOMContentLoaded", () => {
     hideProgressBar();
   }
 });
+
